@@ -283,16 +283,17 @@
   .actions {
     max-width: 760px;
     margin: 24px auto 0;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .btn {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 12px 22px;
+    padding: 14px 22px;
     border-radius: 3px;
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
@@ -301,6 +302,9 @@
     border: none;
     transition: all 0.18s;
     letter-spacing: 0.2px;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
   }
 
   .btn-primary {
@@ -317,6 +321,19 @@
   }
 
   .btn-secondary:hover { border-color: var(--ink); }
+
+  .btn-green {
+    background: var(--green);
+    color: #fff;
+  }
+  .btn-green:hover { background: #1e5038; }
+
+  .btn-blue {
+    background: #2A4A8A;
+    color: #fff;
+    text-decoration: none;
+  }
+  .btn-blue:hover { background: #1e3668; }
 
   .btn svg { width: 15px; height: 15px; }
 
@@ -497,17 +514,21 @@
 
 <!-- Actions -->
 <div class="actions">
-  <button class="btn btn-primary" onclick="copyToClipboard()">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/></svg>
-    Copy for Google Docs
+  <button class="btn btn-green" onclick="doPDF()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 1v9M4 6l4 4 4-4"/><path d="M2 14h12"/></svg>
+    Save as PDF
   </button>
-  <button class="btn btn-secondary" onclick="clearAll()">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5"/></svg>
-    Clear & Start Fresh
-  </button>
+  <a class="btn btn-blue" id="emailBtn" href="#">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M1 4l7 5 7-5"/></svg>
+    Email
+  </a>
   <button class="btn btn-secondary" onclick="saveLocally()">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 13H3a1 1 0 01-1-1V4l3-3h8a1 1 0 011 1v10a1 1 0 01-1 1z"/><rect x="5" y="9" width="6" height="4"/><rect x="5" y="2" width="5" height="3"/></svg>
     Save Draft
+  </button>
+  <button class="btn btn-secondary" onclick="clearAll()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5"/></svg>
+    Clear
   </button>
 </div>
 
@@ -550,64 +571,117 @@ function addRow(listId, color, placeholder) {
   addRow(id, id.includes('progress') ? 'green' : 'amber', '');
 });
 
-// Copy to clipboard in Google Docs-friendly format
-function copyToClipboard() {
+function getPlainText() {
   const name = v('yourName');
   const manager = v('managerName');
-  const week = weekOfInput.value ? new Date(weekOfInput.value + 'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+  const week = weekOfInput.value ? new Date(weekOfInput.value + 'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—';
+  const territory = v('territory');
+  const title = v('docTitle') || 'Weekly Sales Update';
+  const nums = [...document.querySelectorAll('.number-card')].map(c =>
+    c.querySelector('.number-card-label').textContent + ': ' + (c.querySelector('input').value || '—')
+  );
+  const bullets = (id) => [...document.querySelectorAll(`#${id} .bullet-input`)]
+    .map(i => i.value.trim()).filter(Boolean).map(t => '• ' + t).join('\n') || '• —';
+  return {
+    title, name, manager, week, territory,
+    text: `${title}\n${week}\nPrepared by: ${name||'—'} | For: ${manager||'—'}${territory?' | Territory: '+territory:''}\n\nNUMBERS\n${nums.join(' | ')}\n\nPROGRESS\n${bullets('progress-list')}\n\nPRIORITIES NEXT WEEK\n${bullets('priorities-list')}\n\nBLOCKERS & CHALLENGES\n${bullets('blockers-list')}\n\nFEEDBACK REQUESTED\n${bullets('feedback-list')}`
+  };
+}
+
+function buildPrintPage() {
+  const name = v('yourName');
+  const manager = v('managerName');
+  const week = weekOfInput.value ? new Date(weekOfInput.value + 'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—';
   const territory = v('territory');
   const title = v('docTitle') || 'Weekly Sales Update';
 
-  const nums = [...document.querySelectorAll('.number-card')].map(c => {
-    const lbl = c.querySelector('.number-card-label').textContent;
-    const val = c.querySelector('input').value || '—';
-    return `  ${lbl}: ${val}`;
-  }).join('\n');
+  const nums = [...document.querySelectorAll('.number-card')].map(c => ({
+    label: c.querySelector('.number-card-label').textContent,
+    value: c.querySelector('input').value || '—'
+  }));
 
-  const bullets = (id) => [...document.querySelectorAll(`#${id} .bullet-input`)]
-    .map(i => i.value.trim()).filter(Boolean).map(t => `  • ${t}`).join('\n') || '  • —';
+  const getBullets = (id) => [...document.querySelectorAll(`#${id} .bullet-input`)]
+    .map(i => i.value.trim()).filter(Boolean);
 
-  const out = [
-    title,
-    '='.repeat(title.length),
-    '',
-    `Prepared by: ${name || '—'}`,
-    `For: ${manager || '—'}`,
-    `Week of: ${week || '—'}`,
-    territory ? `Territory: ${territory}` : '',
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'NUMBERS AT A GLANCE',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    nums,
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'PROGRESS',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    bullets('progress-list'),
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'PRIORITIES NEXT WEEK',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    bullets('priorities-list'),
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'BLOCKERS & CHALLENGES',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    bullets('blockers-list'),
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'FEEDBACK REQUESTED',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    bullets('feedback-list'),
-  ].filter(l => l !== null).join('\n');
+  const numCardsHTML = nums.map(n => `
+    <div style="background:#f8f7f4;border:1px solid #e2ded8;border-radius:6px;padding:14px 18px;min-width:130px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9a9590;margin-bottom:5px;">${n.label}</div>
+      <div style="font-size:20px;font-weight:700;color:#1a1814;font-family:'Georgia',serif;">${n.value}</div>
+    </div>`).join('');
 
-  navigator.clipboard.writeText(out).then(() => {
-    showToast('✓ Copied! Paste into Google Docs with Ctrl+V');
-  }).catch(() => {
-    showToast('Could not copy — try selecting manually');
-  });
+  const sectionHTML = (emoji, heading, items, color) => {
+    const listItems = items.length
+      ? items.map(t => `<li style="margin-bottom:7px;font-size:14px;line-height:1.6;color:#2a2520;">${t}</li>`).join('')
+      : `<li style="color:#bbb;font-size:14px;">—</li>`;
+    return `<div style="margin-bottom:28px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${color};">
+        <span style="font-size:14px;">${emoji}</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${color};">${heading}</span>
+      </div>
+      <ul style="margin:0;padding-left:20px;list-style:disc;">${listItems}</ul>
+    </div>`;
+  };
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#f0ede6;font-family:'DM Sans',sans-serif;padding:32px 20px 60px;}
+  #doc{max-width:680px;margin:0 auto;background:#fffefb;border:1px solid #e2ded8;border-radius:6px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.08);}
+  @media print{body{background:#fff;padding:0;}#doc{box-shadow:none;border:none;border-radius:0;}.no-print{display:none!important;}.doc-top{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.numbers-strip{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style></head><body>
+<div id="doc">
+  <div class="doc-top" style="background:#1a1814;padding:36px 48px 28px;color:#fff;">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C8522A;font-weight:700;margin-bottom:8px;">Weekly Sales Update</div>
+    <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#fff;margin-bottom:4px;letter-spacing:-0.5px;">${title}</div>
+    <div style="font-size:13px;color:#888;margin-bottom:20px;">${week}</div>
+    <div style="display:flex;gap:28px;flex-wrap:wrap;border-top:1px solid #333;padding-top:18px;">
+      <div><div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#666;font-weight:600;margin-bottom:3px;">Prepared by</div><div style="font-size:14px;color:#eee;font-weight:500;">${name||'—'}</div></div>
+      <div><div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#666;font-weight:600;margin-bottom:3px;">For</div><div style="font-size:14px;color:#eee;font-weight:500;">${manager||'—'}</div></div>
+      ${territory?`<div><div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#666;font-weight:600;margin-bottom:3px;">Territory</div><div style="font-size:14px;color:#eee;font-weight:500;">${territory}</div></div>`:''}
+    </div>
+  </div>
+  <div class="numbers-strip" style="background:#f8f7f4;border-bottom:1px solid #e2ded8;padding:20px 48px;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9a9590;margin-bottom:14px;">Numbers at a Glance</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">${numCardsHTML}</div>
+  </div>
+  <div style="padding:28px 48px 36px;">
+    ${sectionHTML('✅','Progress', getBullets('progress-list'),'#2A6B4A')}
+    ${sectionHTML('→','Priorities Next Week', getBullets('priorities-list'),'#B07A1A')}
+    ${sectionHTML('⚠','Blockers & Challenges', getBullets('blockers-list'),'#B03030')}
+    ${getBullets('feedback-list').length ? sectionHTML('💬','Feedback Requested', getBullets('feedback-list'),'#2A4A8A') : ''}
+  </div>
+</div>
+</body></html>`;
 }
+
+function doPrint() {
+  const win = window.open('', '_blank');
+  win.document.write(buildPrintPage());
+  win.document.close();
+  win.onload = () => win.print();
+}
+
+function doPDF() {
+  const win = window.open('', '_blank');
+  win.document.write(buildPrintPage());
+  win.document.close();
+  win.onload = () => {
+    win.print();
+  };
+  showToast('Print dialog opened — choose "Save as PDF"');
+}
+
+function updateEmailLink() {
+  const d = getPlainText();
+  const subject = encodeURIComponent(d.title + ' — ' + d.week);
+  const body = encodeURIComponent(d.text);
+  document.getElementById('emailBtn').href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+// Update email link whenever inputs change
+document.addEventListener('input', updateEmailLink);
+updateEmailLink();
 
 function v(id) { return document.getElementById(id)?.value?.trim() || ''; }
 
