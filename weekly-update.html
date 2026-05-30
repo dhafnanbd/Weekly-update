@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Update — Upward Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --paper: #FFFEFB;
+    --ink: #1A1814;
+    --muted: #7A7570;
+    --accent: #C8522A;
+    --accent-light: #F2E8E3;
+    --border: #E2DED8;
+    --green: #2A6B4A;
+    --green-light: #E3F0EA;
+    --amber: #B07A1A;
+    --amber-light: #F5EDD8;
+    --red: #B03030;
+    --red-light: #F5E0E0;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  .top-bar {
+    max-width: 760px;
+    margin: 0 auto 36px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+  }
+
+  .brand span { color: var(--accent); }
+
+  .week-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  .doc {
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  /* Doc Header */
+  .doc-header {
+    padding: 36px 48px 28px;
+    border-bottom: 1.5px solid var(--border);
+    background: var(--paper);
+  }
+
+  .doc-meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .doc-title-row {
+    margin-top: 4px;
+  }
+
+  .doc-title-input {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    border: none;
+    background: transparent;
+    width: 100%;
+    outline: none;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  .doc-title-input::placeholder { color: #C8C3BB; }
+
+  /* Field Groups */
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  label.field-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .field-input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    padding: 6px 0;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  .field-input:focus { border-bottom-color: var(--accent); }
+  .field-input::placeholder { color: #C0BBB3; }
+
+  /* Section */
+  .section {
+    padding: 28px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .icon-green { background: var(--green-light); color: var(--green); }
+  .icon-amber { background: var(--amber-light); color: var(--amber); }
+  .icon-red   { background: var(--red-light);   color: var(--red); }
+  .icon-blue  { background: #E3EAF5; color: #2A4A8A; }
+
+  .section-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .section-hint {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Bullet Items */
+  .bullet-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .bullet-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .bullet-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  .bullet-dot.green { background: var(--green); }
+  .bullet-dot.amber { background: var(--amber); }
+  .bullet-dot.red   { background: var(--red); }
+  .bullet-dot.blue  { background: #2A4A8A; }
+
+  .bullet-input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    border: none;
+    border-bottom: 1px dashed var(--border);
+    background: transparent;
+    padding: 4px 0;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+
+  .bullet-input:focus { border-bottom-color: var(--accent); }
+  .bullet-input::placeholder { color: #C8C3BB; }
+
+  .add-row-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 4px 0;
+    transition: color 0.2s;
+    letter-spacing: 0.2px;
+  }
+
+  .add-row-btn:hover { color: var(--accent); }
+
+  .add-row-btn svg { width: 14px; height: 14px; }
+
+  /* Sales Numbers Strip */
+  .numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .number-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+
+  .number-card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .number-card-input {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    border: none;
+    background: transparent;
+    width: 100%;
+    outline: none;
+  }
+
+  .number-card-input::placeholder { color: #C8C3BB; font-size: 18px; }
+
+  /* Bottom Actions */
+  .actions {
+    max-width: 760px;
+    margin: 24px auto 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+    letter-spacing: 0.2px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: #A8421F; }
+
+  .btn-secondary {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--ink); }
+
+  .btn svg { width: 15px; height: 15px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s;
+    white-space: nowrap;
+    z-index: 999;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Divider rule */
+  .thin-rule {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  @media (max-width: 580px) {
+    .doc-header, .section { padding-left: 24px; padding-right: 24px; }
+    .doc-meta-row { grid-template-columns: 1fr; }
+    .numbers-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="brand">Weekly<span>Update</span></div>
+  <div class="week-label" id="weekLabel">—</div>
+</div>
+
+<div class="doc">
+
+  <!-- Doc Header -->
+  <div class="doc-header">
+    <div class="doc-meta-row">
+      <div class="field-group">
+        <label class="field-label">Your Name</label>
+        <input class="field-input" id="yourName" type="text" placeholder="e.g. Rafiq Ahmed" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Manager's Name</label>
+        <input class="field-input" id="managerName" type="text" placeholder="e.g. Sarah Khan" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Week of</label>
+        <input class="field-input" id="weekOf" type="date" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Territory / Region</label>
+        <input class="field-input" id="territory" type="text" placeholder="e.g. North Dhaka" />
+      </div>
+    </div>
+    <div class="doc-title-row">
+      <input class="doc-title-input" id="docTitle" type="text" value="Weekly Sales Update" placeholder="Weekly Sales Update" />
+    </div>
+  </div>
+
+  <!-- Sales Numbers -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-blue">📊</div>
+        <div class="section-name">Numbers at a Glance</div>
+      </div>
+      <div class="section-hint">This week's key metrics</div>
+    </div>
+    <div class="numbers-grid">
+      <div class="number-card">
+        <div class="number-card-label">Revenue Closed</div>
+        <input class="number-card-input" type="text" placeholder="$0" />
+      </div>
+      <div class="number-card">
+        <div class="number-card-label">Pipeline Added</div>
+        <input class="number-card-input" type="text" placeholder="$0" />
+      </div>
+      <div class="number-card">
+        <div class="number-card-label">Deals Closed</div>
+        <input class="number-card-input" type="text" placeholder="0" />
+      </div>
+      <div class="number-card">
+        <div class="number-card-label">Meetings Held</div>
+        <input class="number-card-input" type="text" placeholder="0" />
+      </div>
+      <div class="number-card">
+        <div class="number-card-label">Calls Made</div>
+        <input class="number-card-input" type="text" placeholder="0" />
+      </div>
+      <div class="number-card">
+        <div class="number-card-label">Quota Attainment</div>
+        <input class="number-card-input" type="text" placeholder="0%" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-green">✓</div>
+        <div class="section-name">Progress</div>
+      </div>
+      <div class="section-hint">What moved forward this week</div>
+    </div>
+    <div class="bullet-list" id="progress-list"></div>
+    <button class="add-row-btn" onclick="addRow('progress-list','green','e.g. Closed deal with Acme Corp — $12K ARR')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+      Add item
+    </button>
+  </div>
+
+  <!-- Priorities -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-amber">→</div>
+        <div class="section-name">Priorities Next Week</div>
+      </div>
+      <div class="section-hint">What you'll focus on</div>
+    </div>
+    <div class="bullet-list" id="priorities-list"></div>
+    <button class="add-row-btn" onclick="addRow('priorities-list','amber','e.g. Follow up with 3 warm leads in pipeline')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+      Add item
+    </button>
+  </div>
+
+  <!-- Blockers -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-red">!</div>
+        <div class="section-name">Blockers & Challenges</div>
+      </div>
+      <div class="section-hint">Where you need support</div>
+    </div>
+    <div class="bullet-list" id="blockers-list"></div>
+    <button class="add-row-btn" onclick="addRow('blockers-list','red','e.g. Awaiting legal approval on enterprise contract')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+      Add item
+    </button>
+  </div>
+
+  <!-- Feedback Request -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-blue">?</div>
+        <div class="section-name">Feedback Requested</div>
+      </div>
+      <div class="section-hint">Optional — ask your manager something specific</div>
+    </div>
+    <div class="bullet-list" id="feedback-list"></div>
+    <button class="add-row-btn" onclick="addRow('feedback-list','blue','e.g. Should I push for a shorter contract term to close faster?')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+      Add item
+    </button>
+  </div>
+
+</div>
+
+<!-- Actions -->
+<div class="actions">
+  <button class="btn btn-primary" onclick="copyToClipboard()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/></svg>
+    Copy for Google Docs
+  </button>
+  <button class="btn btn-secondary" onclick="clearAll()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5"/></svg>
+    Clear & Start Fresh
+  </button>
+  <button class="btn btn-secondary" onclick="saveLocally()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 13H3a1 1 0 01-1-1V4l3-3h8a1 1 0 011 1v10a1 1 0 01-1 1z"/><rect x="5" y="9" width="6" height="4"/><rect x="5" y="2" width="5" height="3"/></svg>
+    Save Draft
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Init date
+const weekOfInput = document.getElementById('weekOf');
+const weekLabel = document.getElementById('weekLabel');
+const today = new Date();
+const monday = new Date(today);
+monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+const fmt = d => d.toISOString().split('T')[0];
+weekOfInput.value = fmt(monday);
+updateWeekLabel();
+
+weekOfInput.addEventListener('change', updateWeekLabel);
+
+function updateWeekLabel() {
+  const d = new Date(weekOfInput.value + 'T00:00:00');
+  const end = new Date(d); end.setDate(d.getDate() + 6);
+  const opts = { month: 'short', day: 'numeric' };
+  weekLabel.textContent = `Week of ${d.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
+}
+
+// Add rows
+function addRow(listId, color, placeholder) {
+  const list = document.getElementById(listId);
+  const item = document.createElement('div');
+  item.className = 'bullet-item';
+  item.innerHTML = `<div class="bullet-dot ${color}"></div>
+    <input class="bullet-input" type="text" placeholder="${placeholder}" />`;
+  list.appendChild(item);
+  item.querySelector('input').focus();
+}
+
+// Pre-populate with 2 rows each
+['progress-list','priorities-list'].forEach(id => {
+  addRow(id, id.includes('progress') ? 'green' : 'amber', '');
+  addRow(id, id.includes('progress') ? 'green' : 'amber', '');
+});
+
+// Copy to clipboard in Google Docs-friendly format
+function copyToClipboard() {
+  const name = v('yourName');
+  const manager = v('managerName');
+  const week = weekOfInput.value ? new Date(weekOfInput.value + 'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+  const territory = v('territory');
+  const title = v('docTitle') || 'Weekly Sales Update';
+
+  const nums = [...document.querySelectorAll('.number-card')].map(c => {
+    const lbl = c.querySelector('.number-card-label').textContent;
+    const val = c.querySelector('input').value || '—';
+    return `  ${lbl}: ${val}`;
+  }).join('\n');
+
+  const bullets = (id) => [...document.querySelectorAll(`#${id} .bullet-input`)]
+    .map(i => i.value.trim()).filter(Boolean).map(t => `  • ${t}`).join('\n') || '  • —';
+
+  const out = [
+    title,
+    '='.repeat(title.length),
+    '',
+    `Prepared by: ${name || '—'}`,
+    `For: ${manager || '—'}`,
+    `Week of: ${week || '—'}`,
+    territory ? `Territory: ${territory}` : '',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    'NUMBERS AT A GLANCE',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    nums,
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    'PROGRESS',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    bullets('progress-list'),
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    'PRIORITIES NEXT WEEK',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    bullets('priorities-list'),
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    'BLOCKERS & CHALLENGES',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    bullets('blockers-list'),
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    'FEEDBACK REQUESTED',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    bullets('feedback-list'),
+  ].filter(l => l !== null).join('\n');
+
+  navigator.clipboard.writeText(out).then(() => {
+    showToast('✓ Copied! Paste into Google Docs with Ctrl+V');
+  }).catch(() => {
+    showToast('Could not copy — try selecting manually');
+  });
+}
+
+function v(id) { return document.getElementById(id)?.value?.trim() || ''; }
+
+function clearAll() {
+  if (!confirm('Clear everything and start fresh?')) return;
+  ['yourName','managerName','territory'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('docTitle').value = 'Weekly Sales Update';
+  document.querySelectorAll('.number-card input').forEach(i => i.value = '');
+  ['progress-list','priorities-list','blockers-list','feedback-list'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+  ['progress-list','priorities-list'].forEach(id => {
+    addRow(id, id.includes('progress') ? 'green' : 'amber', '');
+    addRow(id, id.includes('progress') ? 'green' : 'amber', '');
+  });
+  showToast('Cleared!');
+}
+
+function saveLocally() {
+  const data = {
+    yourName: v('yourName'),
+    managerName: v('managerName'),
+    weekOf: weekOfInput.value,
+    territory: v('territory'),
+    docTitle: v('docTitle'),
+    numbers: [...document.querySelectorAll('.number-card input')].map(i => i.value),
+    progress: [...document.querySelectorAll('#progress-list .bullet-input')].map(i => i.value),
+    priorities: [...document.querySelectorAll('#priorities-list .bullet-input')].map(i => i.value),
+    blockers: [...document.querySelectorAll('#blockers-list .bullet-input')].map(i => i.value),
+    feedback: [...document.querySelectorAll('#feedback-list .bullet-input')].map(i => i.value),
+  };
+  localStorage.setItem('weeklyUpdate_draft', JSON.stringify(data));
+  showToast('Draft saved to this browser');
+}
+
+// Load draft on open
+try {
+  const saved = localStorage.getItem('weeklyUpdate_draft');
+  if (saved) {
+    const d = JSON.parse(saved);
+    if (d.yourName) document.getElementById('yourName').value = d.yourName;
+    if (d.managerName) document.getElementById('managerName').value = d.managerName;
+    if (d.weekOf) { weekOfInput.value = d.weekOf; updateWeekLabel(); }
+    if (d.territory) document.getElementById('territory').value = d.territory;
+    if (d.docTitle) document.getElementById('docTitle').value = d.docTitle;
+    if (d.numbers) document.querySelectorAll('.number-card input').forEach((el,i) => el.value = d.numbers[i]||'');
+
+    const restoreList = (listId, color, items) => {
+      const list = document.getElementById(listId);
+      list.innerHTML = '';
+      (items||[]).forEach(text => {
+        const item = document.createElement('div');
+        item.className = 'bullet-item';
+        item.innerHTML = `<div class="bullet-dot ${color}"></div><input class="bullet-input" type="text" value="${text.replace(/"/g,'&quot;')}" />`;
+        list.appendChild(item);
+      });
+      if (!items || items.length === 0) {
+        addRow(listId, color, '');
+        addRow(listId, color, '');
+      }
+    };
+    restoreList('progress-list','green', d.progress);
+    restoreList('priorities-list','amber', d.priorities);
+    restoreList('blockers-list','red', d.blockers);
+    restoreList('feedback-list','blue', d.feedback);
+  }
+} catch(e) {}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
