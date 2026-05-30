@@ -603,11 +603,12 @@ function buildPrintPage() {
   const getBullets = (id) => [...document.querySelectorAll(`#${id} .bullet-input`)]
     .map(i => i.value.trim()).filter(Boolean);
 
-  const numCardsHTML = nums.map(n => `
-    <div style="background:#f8f7f4;border:1px solid #e2ded8;border-radius:6px;padding:14px 18px;min-width:130px;">
+  const numCardsHTML = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;">` +
+    nums.map(n => `
+    <div style="background:#f8f7f4;border:1px solid #e2ded8;border-radius:6px;padding:14px 18px;">
       <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9a9590;margin-bottom:5px;">${n.label}</div>
       <div style="font-size:20px;font-weight:700;color:#1a1814;font-family:'Georgia',serif;">${n.value}</div>
-    </div>`).join('');
+    </div>`).join('') + `</div>`;
 
   const sectionHTML = (emoji, heading, items, color) => {
     const listItems = items.length
@@ -643,7 +644,7 @@ function buildPrintPage() {
   </div>
   <div class="numbers-strip" style="background:#f8f7f4;border-bottom:1px solid #e2ded8;padding:20px 48px;">
     <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9a9590;margin-bottom:14px;">Numbers at a Glance</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">${numCardsHTML}</div>
+    <div style="display:block;width:100%;">${numCardsHTML}</div>
   </div>
   <div style="padding:28px 48px 36px;">
     ${sectionHTML('✅','Progress', getBullets('progress-list'),'#2A6B4A')}
